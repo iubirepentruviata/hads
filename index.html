@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HADS</title>
+<style>
+:root{--bg:#fffdf7;--ink:#111;--muted:#3a3a3a;--brand:#0b4f8a;--line:#222;--ok:#14532d;--warn:#7a4b00;--bad:#8a1c1c}
+*{box-sizing:border-box}
+html{font-size:24px}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Verdana,Tahoma,Arial,sans-serif;line-height:1.5}
+header{display:flex;flex-wrap:wrap;gap:.6rem;justify-content:space-between;padding:.7rem 1rem;border-bottom:3px solid var(--line);background:#fff}
+.grp{display:flex;gap:.4rem}
+button{font:inherit;cursor:pointer}
+.ctl{min-height:2.6rem;min-width:2.8rem;padding:.2rem .8rem;border:2px solid var(--line);background:#fff;color:var(--ink);border-radius:.5rem}
+.ctl[aria-pressed=true]{background:var(--brand);color:#fff;border-color:var(--brand)}
+main{max-width:46rem;margin:0 auto;padding:1.2rem 1rem 3rem}
+h1{font-size:1.5rem;line-height:1.3;margin:.5rem 0 1rem}
+h2{font-size:1.35rem;line-height:1.35;margin:0 0 1rem}
+p{margin:.6rem 0}
+.prog{font-weight:bold;margin:0 0 .4rem}
+.bar{height:.7rem;background:#ddd;border:2px solid var(--line);border-radius:1rem;overflow:hidden;margin-bottom:1.2rem}
+.bar div{height:100%;background:var(--brand)}
+fieldset{border:0;padding:0;margin:0}
+legend{padding:0}
+.opt{display:flex;align-items:center;gap:.8rem;min-height:4rem;margin:.7rem 0;padding:.7rem 1rem;border:3px solid var(--line);border-radius:.7rem;background:#fff;cursor:pointer}
+.opt input{width:1.6rem;height:1.6rem;flex:none;accent-color:var(--brand)}
+.opt.on{background:var(--brand);color:#fff;border-color:var(--brand);font-weight:bold}
+.opt:focus-within{outline:4px solid #e08a00;outline-offset:2px}
+.nav{display:flex;gap:1rem;margin-top:1.5rem}
+.btn{flex:1;min-height:3.8rem;padding:.6rem 1rem;border:3px solid var(--brand);border-radius:.7rem;background:#fff;color:var(--brand);font-weight:bold}
+.btn.main{background:var(--brand);color:#fff}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+button:focus-visible{outline:4px solid #e08a00;outline-offset:2px}
+.card{border:3px solid var(--line);border-radius:.7rem;padding:1rem;margin:1rem 0;background:#fff}
+.card h2{margin:0}
+.score{font-size:2rem;font-weight:bold;margin:.2rem 0}
+.b0{color:var(--ok)}.b1{color:var(--warn)}.b2{color:var(--bad)}
+.note{color:var(--muted);font-size:.85rem}
+@media print{header,.nav,.noprint{display:none}body{background:#fff}}
+</style>
+</head>
+<body>
+<header>
+  <div class="grp" role="group" aria-label="Limba / Language">
+    <button class="ctl" data-lang="ro" aria-pressed="true">Română</button>
+    <button class="ctl" data-lang="en" aria-pressed="false">English</button>
+  </div>
+  <div class="grp" role="group">
+    <button class="ctl" id="fm">A−</button>
+    <button class="ctl" id="fp">A+</button>
+  </div>
+</header>
+<main id="app"></main>
+
+<script>
+// type: A = anxiety, D = depression. Options: [score, ro, en] in the order printed on the form.
+const I=[
+{t:'A',q:['Mă simt încordat(ă) sau „ca pe ace”','I feel tense or ‘wound up’'],o:[[3,'Cea mai mare parte a timpului','Most of the time'],[2,'O mare parte din timp','A lot of the time'],[1,'Din când în când, ocazional','From time to time, occasionally'],[0,'Deloc','Not at all']]},
+{t:'D',q:['Mă bucur și acum de lucrurile care îmi plăceau înainte','I still enjoy the things I used to enjoy'],o:[[0,'Cu siguranță la fel de mult','Definitely as much'],[1,'Nu chiar atât de mult','Not quite so much'],[2,'Doar puțin','Only a little'],[3,'Aproape deloc','Hardly at all']]},
+{t:'A',q:['Am un sentiment de frică, de parcă ar urma să se întâmple ceva îngrozitor','I get a sort of frightened feeling as if something awful is about to happen'],o:[[3,'Da, foarte clar și destul de puternic','Very definitely and quite badly'],[2,'Da, dar nu foarte puternic','Yes, but not too badly'],[1,'Puțin, dar nu mă îngrijorează','A little, but it doesn’t worry me'],[0,'Deloc','Not at all']]},
+{t:'D',q:['Pot să râd și să văd partea amuzantă a lucrurilor','I can laugh and see the funny side of things'],o:[[0,'La fel de mult ca întotdeauna','As much as I always could'],[1,'Nu chiar la fel de mult acum','Not quite so much now'],[2,'Cu siguranță mai puțin acum','Definitely not so much now'],[3,'Deloc','Not at all']]},
+{t:'A',q:['Îmi trec prin minte gânduri care mă îngrijorează','Worrying thoughts go through my mind'],o:[[3,'Foarte mult din timp','A great deal of the time'],[2,'O mare parte din timp','A lot of the time'],[1,'Din când în când, dar nu prea des','From time to time, but not too often'],[0,'Doar ocazional','Only occasionally']]},
+{t:'D',q:['Mă simt bine dispus(ă)','I feel cheerful'],o:[[3,'Deloc','Not at all'],[2,'Rareori','Not often'],[1,'Uneori','Sometimes'],[0,'Cea mai mare parte a timpului','Most of the time']]},
+{t:'A',q:['Pot să stau liniștit(ă) și să mă simt relaxat(ă)','I can sit at ease and feel relaxed'],o:[[0,'Cu siguranță','Definitely'],[1,'De obicei','Usually'],[2,'Rareori','Not often'],[3,'Deloc','Not at all']]},
+{t:'D',q:['Mă simt încetinit(ă)','I feel as if I am slowed down'],o:[[3,'Aproape tot timpul','Nearly all the time'],[2,'Foarte des','Very often'],[1,'Uneori','Sometimes'],[0,'Deloc','Not at all']]},
+{t:'A',q:['Am o senzație de frică, parcă aș avea „fluturi” în stomac','I get a sort of frightened feeling like ‘butterflies’ in the stomach'],o:[[0,'Deloc','Not at all'],[1,'Ocazional','Occasionally'],[2,'Destul de des','Quite often'],[3,'Foarte des','Very often']]},
+{t:'D',q:['Mi-am pierdut interesul pentru aspectul meu','I have lost interest in my appearance'],o:[[3,'Da, cu siguranță','Definitely'],[2,'Nu am grijă de aspectul meu atât cât ar trebui','I don’t take as much care as I should'],[1,'Poate nu am grijă de aspectul meu chiar atât de mult','I may not take quite as much care'],[0,'Am grijă de aspectul meu la fel ca întotdeauna','I take just as much care as ever']]},
+{t:'A',q:['Mă simt neliniștit(ă), ca și cum ar trebui să fiu mereu în mișcare','I feel restless as I have to be on the move'],o:[[3,'Foarte mult','Very much indeed'],[2,'Destul de mult','Quite a lot'],[1,'Nu prea mult','Not very much'],[0,'Deloc','Not at all']]},
+{t:'D',q:['Aștept cu bucurie lucrurile care urmează','I look forward with enjoyment to things'],o:[[0,'La fel de mult ca întotdeauna','As much as I ever did'],[1,'Ceva mai puțin decât înainte','Rather less than I used to'],[2,'Cu siguranță mai puțin decât înainte','Definitely less than I used to'],[3,'Aproape deloc','Hardly at all']]},
+{t:'A',q:['Am senzații bruște de panică','I get sudden feelings of panic'],o:[[3,'Foarte des','Very often indeed'],[2,'Destul de des','Quite often'],[1,'Nu prea des','Not very often'],[0,'Deloc','Not at all']]},
+{t:'D',q:['Mă pot bucura de o carte bună sau de o emisiune la radio ori la televizor','I can enjoy a good book or radio or TV program'],o:[[0,'Des','Often'],[1,'Uneori','Sometimes'],[2,'Rareori','Not often'],[3,'Foarte rar','Very seldom']]}
+];
+const T={
+ro:{title:'Scala de anxietate și depresie (HADS)',
+ intro:'Alegeți răspunsul care descrie cel mai bine cum v-ați simțit în ultima săptămână. Nu stați prea mult pe gânduri: primul răspuns care vă vine în minte este, de obicei, cel mai potrivit. Nu există răspunsuri corecte sau greșite.',
+ meta:'14 întrebări, durează aproximativ 3 minute.',tip:'Apăsați pe un răspuns și veți trece automat la întrebarea următoare. Puteți reveni oricând cu butonul „Înapoi”.',start:'Începeți',qn:(n,m)=>'Întrebarea '+n+' din '+m,back:'Înapoi',next:'Continuați',see:'Vedeți rezultatul',
+ res:'Rezultat',anx:'Anxietate (A)',dep:'Depresie (D)',
+ bands:['✓ Scor normal (0–7)','! Scor la limită (8–10)','⚠ Scor crescut, posibil caz clinic (11–21)'],
+ note:'Acest chestionar oferă doar o orientare și nu stabilește un diagnostic. Discutați rezultatul cu medicul sau cu psihologul dumneavoastră.',
+ again:'Începeți din nou',print:'Tipăriți',edit:'Modificați răspunsurile',sm:'Text mai mic',bg:'Text mai mare'},
+en:{title:'Hospital Anxiety and Depression Scale (HADS)',
+ intro:'Choose the reply that is closest to how you have been feeling in the past week. Don’t take too long over your replies: your first, immediate answer is best. There are no right or wrong answers.',
+ meta:'14 questions, about 3 minutes.',tip:'Tap an answer and you will move on to the next question automatically. You can go back at any time with the “Back” button.',start:'Start',qn:(n,m)=>'Question '+n+' of '+m,back:'Back',next:'Next',see:'See result',
+ res:'Result',anx:'Anxiety (A)',dep:'Depression (D)',
+ bands:['✓ Normal (0–7)','! Borderline abnormal (8–10)','⚠ Abnormal, possible case (11–21)'],
+ note:'This questionnaire is only a guide, not a diagnosis. Please discuss the result with your doctor or psychologist.',
+ again:'Start again',print:'Print',edit:'Change my answers',sm:'Smaller text',bg:'Larger text'}
+};
+let tm=null,pk=null;const ADV=350;
+let L='ro',step=-1,size=24,ans=Array(I.length).fill(null);
+const $=id=>document.getElementById(id);
+function el(tag,cls,txt){const e=document.createElement(tag);if(cls)e.className=cls;if(txt!=null)e.textContent=txt;return e}
+function btn(txt,cls,fn){const b=el('button','btn '+cls,txt);b.type='button';b.onclick=fn;return b}
+function scores(){let a=0,d=0;I.forEach((it,i)=>{if(ans[i]!==null){const s=it.o[ans[i]][0];if(it.t==='A')a+=s;else d+=s}});return{a,d}}
+function band(n){return n<=7?0:n<=10?1:2}
+function go(n){clearTimeout(tm);tm=null;step=n;render(true)}
+
+function render(focus){
+  const t=T[L],app=$('app');app.replaceChildren();
+  document.documentElement.lang=L;document.title=t.title;
+  document.querySelectorAll('[data-lang]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.lang===L)));
+  $('fm').setAttribute('aria-label',t.sm);$('fp').setAttribute('aria-label',t.bg);
+  if(step<0)start(app,t);else if(step<I.length)question(app,t);else result(app,t);
+  const h=app.querySelector('h1,h2');h.tabIndex=-1;if(focus)h.focus();
+}
+function start(app,t){
+  app.append(el('h1',null,t.title),el('p',null,t.intro),el('p','note',t.meta),el('p',null,t.tip));
+  const n=el('div','nav');n.append(btn(t.start,'main',()=>go(0)));app.append(n);
+}
+function question(app,t){
+  const it=I[step],i=L==='ro'?0:1;
+  app.append(el('p','prog',t.qn(step+1,I.length)));
+  const bar=el('div','bar'),fill=el('div');fill.style.width=(step/I.length*100)+'%';bar.append(fill);
+  bar.setAttribute('role','progressbar');bar.setAttribute('aria-valuemin','0');bar.setAttribute('aria-valuemax',String(I.length));bar.setAttribute('aria-valuenow',String(step));
+  app.append(bar);
+  const fs=el('fieldset'),lg=el('legend');lg.append(el('h2',null,it.q[i]));fs.append(lg);
+  const nx=btn(step===I.length-1?t.see:t.next,'main',()=>go(step+1));nx.id='next';nx.disabled=ans[step]===null;
+  it.o.forEach((o,k)=>{
+    const lab=el('label','opt'+(ans[step]===k?' on':'')),r=document.createElement('input');
+    r.type='radio';r.name='o';r.value=String(k);r.checked=ans[step]===k;
+    const pick=()=>{ans[step]=k;fs.querySelectorAll('.opt').forEach(x=>x.classList.remove('on'));lab.classList.add('on');r.checked=true;nx.disabled=false};
+    r.onchange=pick;
+    // touch/mouse tap (detail>0) picks and moves on after a short pause; keyboard (detail 0) only selects
+    lab.onclick=e=>{if(tm){if(e.target!==pk)e.preventDefault();return}if(e.detail===0)return;pick();pk=r;const n=step+1;tm=setTimeout(()=>{tm=null;go(n)},ADV)};
+    lab.append(r,el('span',null,o[i+1]));fs.append(lab);
+  });
+  app.append(fs);
+  const n=el('div','nav');n.append(btn(t.back,'back',()=>go(step-1)),nx);app.append(n);
+}
+function result(app,t){
+  const s=scores();app.append(el('h1',null,t.res));
+  [[t.anx,s.a],[t.dep,s.d]].forEach(([name,v])=>{
+    const c=el('div','card');c.append(el('h2',null,name),el('p','score b'+band(v),v+' / 21'),el('p','b'+band(v),t.bands[band(v)]));app.append(c);
+  });
+  app.append(el('p','note',t.note));
+  const n=el('div','nav noprint');
+  n.append(btn(t.edit,'back',()=>go(I.length-1)),btn(t.print,'back',()=>window.print()),btn(t.again,'main',()=>{ans=Array(I.length).fill(null);go(-1)}));
+  n.style.flexWrap='wrap';app.append(n);
+}
+document.querySelectorAll('[data-lang]').forEach(b=>b.onclick=()=>{L=b.dataset.lang;render(false)});
+function fsz(d){size=Math.min(34,Math.max(18,size+d*3));document.documentElement.style.fontSize=size+'px'}
+$('fm').onclick=()=>fsz(-1);$('fp').onclick=()=>fsz(1);
+render(false);
+</script>
+</body>
+</html>
