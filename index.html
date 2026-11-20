@@ -4,17 +4,18 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>HADS</title>
+<link rel="icon" href="data:,">
 <style>
 :root{--bg:#fffdf7;--ink:#111;--muted:#3a3a3a;--brand:#0b4f8a;--line:#222;--ok:#14532d;--warn:#7a4b00;--bad:#8a1c1c}
 *{box-sizing:border-box}
-html{font-size:24px}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:Verdana,Tahoma,Arial,sans-serif;line-height:1.5}
-header{display:flex;flex-wrap:wrap;gap:.6rem;justify-content:space-between;padding:.7rem 1rem;border-bottom:3px solid var(--line);background:#fff}
-.grp{display:flex;gap:.4rem}
+html{font-size:150%}
+body{margin:0;overflow-wrap:anywhere;background:var(--bg);color:var(--ink);font-family:Verdana,Tahoma,Arial,sans-serif;line-height:1.5}
+header{display:flex;flex-wrap:wrap;gap:.4rem .8rem;justify-content:space-between;padding:.4rem .8rem;border-bottom:3px solid var(--line);background:#fff}
+.grp{display:flex;flex-wrap:wrap;gap:.4rem}
 button{font:inherit;cursor:pointer}
-.ctl{min-height:2.6rem;min-width:2.8rem;padding:.2rem .8rem;border:2px solid var(--line);background:#fff;color:var(--ink);border-radius:.5rem}
+.ctl{font-size:.75rem;min-height:44px;min-width:44px;padding:.2rem .7rem;border:2px solid var(--line);background:#fff;color:var(--ink);border-radius:.5rem}
 .ctl[aria-pressed=true]{background:var(--brand);color:#fff;border-color:var(--brand)}
-main{max-width:46rem;margin:0 auto;padding:1.2rem 1rem 3rem}
+main{max-width:46rem;margin:0 auto;padding:1.2rem .8rem 3rem}
 h1{font-size:1.5rem;line-height:1.3;margin:.5rem 0 1rem}
 h2{font-size:1.35rem;line-height:1.35;margin:0 0 1rem}
 p{margin:.6rem 0}
@@ -23,14 +24,20 @@ p{margin:.6rem 0}
 .bar div{height:100%;background:var(--brand)}
 fieldset{border:0;padding:0;margin:0}
 legend{padding:0}
-.opt{display:flex;align-items:center;gap:.8rem;min-height:4rem;margin:.7rem 0;padding:.7rem 1rem;border:3px solid var(--line);border-radius:.7rem;background:#fff;cursor:pointer}
+.opt{display:flex;align-items:center;gap:.8rem;min-height:4rem;margin:.7rem 0;padding:.7rem 1rem;border:3px solid var(--line);border-radius:.7rem;background:#fff;cursor:pointer;overflow-wrap:anywhere}
 .opt input{width:1.6rem;height:1.6rem;flex:none;accent-color:var(--brand)}
 .opt.on{background:var(--brand);color:#fff;border-color:var(--brand);font-weight:bold}
 .opt:focus-within{outline:4px solid #e08a00;outline-offset:2px}
-.nav{display:flex;gap:1rem;margin-top:1.5rem}
-.btn{flex:1;min-height:3.8rem;padding:.6rem 1rem;border:3px solid var(--brand);border-radius:.7rem;background:#fff;color:var(--brand);font-weight:bold}
+.nav{display:flex;flex-wrap:wrap;gap:1rem;margin-top:1.5rem}
+.btn{flex:1 1 8rem;min-height:3.8rem;padding:.6rem .6rem;overflow-wrap:anywhere;border:3px solid var(--brand);border-radius:.7rem;background:#fff;color:var(--brand);font-weight:bold}
 .btn.main{background:var(--brand);color:#fff}
+.btn.wa{display:flex;align-items:center;justify-content:center;text-align:center;text-decoration:none;background:#0b6b3a;border-color:#0b6b3a;color:#fff;width:100%}
+.wa-wrap{margin-top:2rem;padding-top:1rem;border-top:3px solid var(--line)}
+.btn.spk{flex:none;width:100%;min-height:3.2rem;margin:.2rem 0 .6rem;border-width:2px;font-weight:normal}
+.btn.spk.on{background:var(--brand);color:#fff;font-weight:bold}
 .btn:disabled{opacity:.4;cursor:not-allowed}
+h1:focus,h2:focus{outline:none}
+.ctl:disabled{opacity:.4;cursor:not-allowed}
 button:focus-visible{outline:4px solid #e08a00;outline-offset:2px}
 .card{border:3px solid var(--line);border-radius:.7rem;padding:1rem;margin:1rem 0;background:#fff}
 .card h2{margin:0}
@@ -43,8 +50,8 @@ button:focus-visible{outline:4px solid #e08a00;outline-offset:2px}
 <body>
 <header>
   <div class="grp" role="group" aria-label="Limba / Language">
-    <button class="ctl" data-lang="ro" aria-pressed="true">Română</button>
-    <button class="ctl" data-lang="en" aria-pressed="false">English</button>
+    <button class="ctl" data-lang="ro" lang="ro" aria-pressed="true">Română</button>
+    <button class="ctl" data-lang="en" lang="en" aria-pressed="false">English</button>
   </div>
   <div class="grp" role="group">
     <button class="ctl" id="fm">A−</button>
@@ -52,6 +59,7 @@ button:focus-visible{outline:4px solid #e08a00;outline-offset:2px}
   </div>
 </header>
 <main id="app"></main>
+<noscript><p style="padding:1rem;font-size:1.2rem">Activați JavaScript pentru a completa chestionarul. / Please enable JavaScript to use this questionnaire.</p></noscript>
 
 <script>
 // type: A = anxiety, D = depression. Options: [score, ro, en] in the order printed on the form.
@@ -75,51 +83,104 @@ const T={
 ro:{title:'Scala de anxietate și depresie (HADS)',
  intro:'Alegeți răspunsul care descrie cel mai bine cum v-ați simțit în ultima săptămână. Nu stați prea mult pe gânduri: primul răspuns care vă vine în minte este, de obicei, cel mai potrivit. Nu există răspunsuri corecte sau greșite.',
  meta:'14 întrebări, durează aproximativ 3 minute.',tip:'Apăsați pe un răspuns și veți trece automat la întrebarea următoare. Puteți reveni oricând cu butonul „Înapoi”.',start:'Începeți',qn:(n,m)=>'Întrebarea '+n+' din '+m,back:'Înapoi',next:'Continuați',see:'Vedeți rezultatul',
- res:'Rezultat',anx:'Anxietate (A)',dep:'Depresie (D)',
+ res:'Rezultat',spk:'Ascultați întrebarea',spkIntro:'Ascultați instrucțiunile',stop:'Opriți citirea',ansIntro:'Variante de răspuns',noVoice:'Citirea cu voce nu este disponibilă pe acest dispozitiv.',wa:'Trimiteți pe WhatsApp',waNote:'Se va deschide WhatsApp cu un mesaj pregătit. Îl puteți citi și modifica înainte de a-l trimite.',msgHead:'Chestionar HADS (Scala de anxietate și depresie)',msgDate:'Data',msgAns:'Răspunsuri (întrebare:scor)',resT:'Chestionar început',resP:n=>'Ați început deja chestionarul. Ați rămas la întrebarea '+n+' din '+I.length+'.',resDone:'Ați completat deja chestionarul.',resC:'Continuați de unde ați rămas',resNote:'Răspunsurile rămân doar în această filă a browserului și se șterg când o închideți.',anx:'Anxietate (A)',dep:'Depresie (D)',
  bands:['✓ Scor normal (0–7)','! Scor la limită (8–10)','⚠ Scor crescut, posibil caz clinic (11–21)'],
  note:'Acest chestionar oferă doar o orientare și nu stabilește un diagnostic. Discutați rezultatul cu medicul sau cu psihologul dumneavoastră.',
  again:'Începeți din nou',print:'Tipăriți',edit:'Modificați răspunsurile',sm:'Text mai mic',bg:'Text mai mare'},
 en:{title:'Hospital Anxiety and Depression Scale (HADS)',
  intro:'Choose the reply that is closest to how you have been feeling in the past week. Don’t take too long over your replies: your first, immediate answer is best. There are no right or wrong answers.',
- meta:'14 questions, about 3 minutes.',tip:'Tap an answer and you will move on to the next question automatically. You can go back at any time with the “Back” button.',start:'Start',qn:(n,m)=>'Question '+n+' of '+m,back:'Back',next:'Next',see:'See result',
- res:'Result',anx:'Anxiety (A)',dep:'Depression (D)',
- bands:['✓ Normal (0–7)','! Borderline abnormal (8–10)','⚠ Abnormal, possible case (11–21)'],
+ meta:'14 questions, about 3 minutes.',tip:'Tap or click an answer and you will move on to the next question automatically. You can go back at any time with the “Back” button.',start:'Start',qn:(n,m)=>'Question '+n+' of '+m,back:'Back',next:'Next',see:'See result',
+ res:'Result',spk:'Listen to the question',spkIntro:'Listen to the instructions',stop:'Stop reading',ansIntro:'Answer options',noVoice:'Reading aloud is not available on this device.',wa:'Send on WhatsApp',waNote:'WhatsApp will open with a ready-made message. You can read and edit it before sending.',msgHead:'HADS questionnaire (Hospital Anxiety and Depression Scale)',msgDate:'Date',msgAns:'Answers (question:score)',resT:'Questionnaire in progress',resP:n=>'You have already started. You stopped at question '+n+' of '+I.length+'.',resDone:'You have already completed the questionnaire.',resC:'Continue where you left off',resNote:'Your answers stay only in this browser tab and are deleted when you close it.',anx:'Anxiety (A)',dep:'Depression (D)',
+ bands:['✓ Normal score (0–7)','! Borderline score (8–10)','⚠ Raised score, possible case (11–21)'],
  note:'This questionnaire is only a guide, not a diagnosis. Please discuss the result with your doctor or psychologist.',
  again:'Start again',print:'Print',edit:'Change my answers',sm:'Smaller text',bg:'Larger text'}
 };
 let tm=null,pk=null;const ADV=350;
-let L='ro',step=-1,size=24,ans=Array(I.length).fill(null);
+let L='ro',step=-1,size=150,ans=Array(I.length).fill(null);
+// Storage: language + text size in localStorage (harmless); answers in sessionStorage only (cleared when the tab closes). All guarded: works without storage.
+const SK='hads.v1',ZS=[110,130,150,170,190,210];
+function sget(st,k){try{return JSON.parse(window[st].getItem(k))}catch(e){return null}}
+function sset(st,k,v){try{window[st].setItem(k,JSON.stringify(v))}catch(e){}}
+function sdel(st,k){try{window[st].removeItem(k)}catch(e){}}
+const saveP=()=>sset('localStorage',SK+'.p',{l:L,z:size});
+const saveS=()=>sset('sessionStorage',SK+'.s',{s:step,a:ans});
+const P0=sget('localStorage',SK+'.p');
+if(P0&&typeof P0==='object'){if(P0.l==='ro'||P0.l==='en')L=P0.l;if(ZS.includes(P0.z))size=P0.z}
+let resume=null;const S0=sget('sessionStorage',SK+'.s');
+if(S0&&Array.isArray(S0.a)&&S0.a.length===I.length&&S0.a.every(x=>x===null||(Number.isInteger(x)&&x>=0&&x<4))){
+  const f=S0.a.indexOf(null),mx=f===-1?I.length:f,st=Math.max(0,Math.min(Number.isInteger(S0.s)?S0.s:0,mx));
+  if(S0.a.some(x=>x!==null)||st>0)resume={s:st,a:S0.a};
+}
 const $=id=>document.getElementById(id);
 function el(tag,cls,txt){const e=document.createElement(tag);if(cls)e.className=cls;if(txt!=null)e.textContent=txt;return e}
 function btn(txt,cls,fn){const b=el('button','btn '+cls,txt);b.type='button';b.onclick=fn;return b}
 function scores(){let a=0,d=0;I.forEach((it,i)=>{if(ans[i]!==null){const s=it.o[ans[i]][0];if(it.t==='A')a+=s;else d+=s}});return{a,d}}
 function band(n){return n<=7?0:n<=10?1:2}
-function go(n){clearTimeout(tm);tm=null;step=n;render(true)}
+function go(n){clearTimeout(tm);tm=null;step=n;if(n>=0||ans.some(x=>x!==null))saveS();render(true);try{window.scrollTo(0,0)}catch(e){}}
+
+// ---- Read aloud (Web Speech API). Button only appears when the device can speak the current language.
+const SS=window.speechSynthesis||null;let voices=[],noV={ro:false,en:false},cur=null;
+function loadV(){try{voices=SS?SS.getVoices():[]}catch(e){voices=[]}}
+function vfor(){return voices.find(v=>String(v.lang).toLowerCase().replace('_','-').split('-')[0]===L)||null}
+function canSpeak(){return !!SS&&typeof SpeechSynthesisUtterance!=='undefined'&&!noV[L]&&(voices.length===0||!!vfor())}
+function stopSay(){if(!cur)return;const c=cur;cur=null;try{SS.cancel()}catch(e){}c.reset()}
+const clean=x=>x.replace(/\(ă\)/g,'').replace(/\s*\(HADS\)/g,'').replace(/\s+\./g,'.');
+function say(text,b,t){
+  if(cur&&cur.b===b){stopSay();return}
+  stopSay();
+  const u=new SpeechSynthesisUtterance(text),v=vfor(),lb=b.querySelector('.lbl'),orig=lb.textContent;
+  u.lang=v?v.lang:(L==='ro'?'ro-RO':'en-GB');if(v)u.voice=v;u.rate=0.9;
+  const c={b,reset(){lb.textContent=orig;b.classList.remove('on')}},lg=L;let started=false;
+  cur=c;lb.textContent=t.stop;b.classList.add('on');
+  const fail=()=>{if(cur===c)cur=null;c.reset();noV[lg]=true;if(b.isConnected){const m=el('p','note',t.noVoice);m.setAttribute('role','status');b.replaceWith(m)}};
+  u.onstart=()=>{started=true};
+  u.onend=()=>{if(cur===c){cur=null;c.reset()}};
+  u.onerror=e=>{if(e&&(e.error==='canceled'||e.error==='interrupted'))return;fail()};
+  try{SS.speak(u)}catch(e){fail();return}
+  setTimeout(()=>{if(cur===c&&!started)fail()},3000); // device accepted the call but never spoke
+}
+function spkBtn(getText,label,t){
+  const b=el('button','btn spk'),ic=el('span',null,'🔊 ');ic.setAttribute('aria-hidden','true');
+  b.type='button';b.append(ic,el('span','lbl',label));b.onclick=()=>say(getText(),b,t);return b;
+}
+loadV();let hadV=canSpeak();
+if(SS&&SS.addEventListener){SS.addEventListener('voiceschanged',()=>{loadV();const n=canSpeak();if(n!==hadV){hadV=n;render(false)}})}
+document.addEventListener('visibilitychange',()=>{if(document.hidden)stopSay()});window.addEventListener('pagehide',stopSay);
 
 function render(focus){
+  stopSay();
   const t=T[L],app=$('app');app.replaceChildren();
   document.documentElement.lang=L;document.title=t.title;
   document.querySelectorAll('[data-lang]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.lang===L)));
   $('fm').setAttribute('aria-label',t.sm);$('fp').setAttribute('aria-label',t.bg);
   if(step<0)start(app,t);else if(step<I.length)question(app,t);else result(app,t);
-  const h=app.querySelector('h1,h2');h.tabIndex=-1;if(focus)h.focus();
+  const h=app.querySelector('h1,h2');h.tabIndex=-1;if(focus)h.focus({preventScroll:true});
 }
 function start(app,t){
   app.append(el('h1',null,t.title),el('p',null,t.intro),el('p','note',t.meta),el('p',null,t.tip));
-  const n=el('div','nav');n.append(btn(t.start,'main',()=>go(0)));app.append(n);
+  if(canSpeak())app.append(spkBtn(()=>clean([t.title,t.intro,t.tip].join('. ')),t.spkIntro,t));
+  const n=el('div','nav');
+  if(resume){
+    const c=el('div','card'),done=resume.s>=I.length;
+    c.append(el('h2',null,t.resT),el('p',null,done?t.resDone:t.resP(resume.s+1)),el('p','note',t.resNote));app.append(c);
+    n.append(btn(done?t.see:t.resC,'main',()=>{const r=resume;resume=null;ans=r.a;go(r.s)}),
+             btn(t.again,'back',()=>{resume=null;ans=Array(I.length).fill(null);sdel('sessionStorage',SK+'.s');render(false)}));
+  }else n.append(btn(t.start,'main',()=>go(0)));
+  app.append(n);
 }
 function question(app,t){
   const it=I[step],i=L==='ro'?0:1;
   app.append(el('p','prog',t.qn(step+1,I.length)));
   const bar=el('div','bar'),fill=el('div');fill.style.width=(step/I.length*100)+'%';bar.append(fill);
-  bar.setAttribute('role','progressbar');bar.setAttribute('aria-valuemin','0');bar.setAttribute('aria-valuemax',String(I.length));bar.setAttribute('aria-valuenow',String(step));
+  bar.setAttribute('aria-hidden','true');
   app.append(bar);
   const fs=el('fieldset'),lg=el('legend');lg.append(el('h2',null,it.q[i]));fs.append(lg);
+  if(canSpeak())fs.append(spkBtn(()=>clean(t.qn(step+1,I.length)+'. '+it.q[i]+'. '+t.ansIntro+'. '+it.o.map(o=>o[i+1]).join('. ')),t.spk,t));
   const nx=btn(step===I.length-1?t.see:t.next,'main',()=>go(step+1));nx.id='next';nx.disabled=ans[step]===null;
   it.o.forEach((o,k)=>{
     const lab=el('label','opt'+(ans[step]===k?' on':'')),r=document.createElement('input');
     r.type='radio';r.name='o';r.value=String(k);r.checked=ans[step]===k;
-    const pick=()=>{ans[step]=k;fs.querySelectorAll('.opt').forEach(x=>x.classList.remove('on'));lab.classList.add('on');r.checked=true;nx.disabled=false};
+    const pick=()=>{ans[step]=k;fs.querySelectorAll('.opt').forEach(x=>x.classList.remove('on'));lab.classList.add('on');r.checked=true;nx.disabled=false;saveS()};
     r.onchange=pick;
     // touch/mouse tap (detail>0) picks and moves on after a short pause; keyboard (detail 0) only selects
     lab.onclick=e=>{if(tm){if(e.target!==pk)e.preventDefault();return}if(e.detail===0)return;pick();pk=r;const n=step+1;tm=setTimeout(()=>{tm=null;go(n)},ADV)};
@@ -135,12 +196,19 @@ function result(app,t){
   });
   app.append(el('p','note',t.note));
   const n=el('div','nav noprint');
-  n.append(btn(t.edit,'back',()=>go(I.length-1)),btn(t.print,'back',()=>window.print()),btn(t.again,'main',()=>{ans=Array(I.length).fill(null);go(-1)}));
+  n.append(btn(t.edit,'back',()=>go(I.length-1)),btn(t.print,'back',()=>window.print()),btn(t.again,'main',()=>{ans=Array(I.length).fill(null);sdel('sessionStorage',SK+'.s');go(-1)}));
   n.style.flexWrap='wrap';app.append(n);
+  const msg=[t.msgHead,t.msgDate+': '+new Date().toLocaleDateString(L==='ro'?'ro-RO':'en-GB'),
+    t.anx+': '+s.a+' / 21 – '+t.bands[band(s.a)].replace(/^\S+\s/,''),
+    t.dep+': '+s.d+' / 21 – '+t.bands[band(s.d)].replace(/^\S+\s/,''),
+    t.msgAns+': '+I.map((it,i)=>(i+1)+':'+(ans[i]===null?'-':it.o[ans[i]][0])).join(', ')].join('\n');
+  const w=el('div','wa-wrap noprint'),a=el('a','btn wa',t.wa);
+  a.href='https://wa.me/40749255366?text='+encodeURIComponent(msg);a.target='_blank';a.rel='noopener noreferrer';
+  w.append(a,el('p','note',t.waNote));app.append(w);
 }
-document.querySelectorAll('[data-lang]').forEach(b=>b.onclick=()=>{L=b.dataset.lang;render(false)});
-function fsz(d){size=Math.min(34,Math.max(18,size+d*3));document.documentElement.style.fontSize=size+'px'}
-$('fm').onclick=()=>fsz(-1);$('fp').onclick=()=>fsz(1);
+document.querySelectorAll('[data-lang]').forEach(b=>b.onclick=()=>{L=b.dataset.lang;saveP();render(false)});
+function fsz(d){size=Math.min(210,Math.max(110,size+d*20));document.documentElement.style.fontSize=size+'%';$('fm').disabled=size<=110;$('fp').disabled=size>=210;if(d)saveP()}
+$('fm').onclick=()=>fsz(-1);$('fp').onclick=()=>fsz(1);fsz(0);
 render(false);
 </script>
 </body>
