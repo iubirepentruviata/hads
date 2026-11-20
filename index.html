@@ -83,14 +83,14 @@ const T={
 ro:{title:'Scala de anxietate și depresie (HADS)',
  intro:'Alegeți răspunsul care descrie cel mai bine cum v-ați simțit în ultima săptămână. Nu stați prea mult pe gânduri: primul răspuns care vă vine în minte este, de obicei, cel mai potrivit. Nu există răspunsuri corecte sau greșite.',
  meta:'14 întrebări, durează aproximativ 3 minute.',tip:'Apăsați pe un răspuns și veți trece automat la întrebarea următoare. Puteți reveni oricând cu butonul „Înapoi”.',start:'Începeți',qn:(n,m)=>'Întrebarea '+n+' din '+m,back:'Înapoi',next:'Continuați',see:'Vedeți rezultatul',
- res:'Rezultat',spk:'Ascultați întrebarea',spkIntro:'Ascultați instrucțiunile',stop:'Opriți citirea',ansIntro:'Variante de răspuns',noVoice:'Citirea cu voce nu este disponibilă pe acest dispozitiv.',wa:'Trimiteți pe WhatsApp',waNote:'Se va deschide WhatsApp cu un mesaj pregătit. Îl puteți citi și modifica înainte de a-l trimite.',msgHead:'Chestionar HADS (Scala de anxietate și depresie)',msgDate:'Data',msgAns:'Răspunsuri (întrebare:scor)',resT:'Chestionar început',resP:n=>'Ați început deja chestionarul. Ați rămas la întrebarea '+n+' din '+I.length+'.',resDone:'Ați completat deja chestionarul.',resC:'Continuați de unde ați rămas',resNote:'Răspunsurile rămân doar în această filă a browserului și se șterg când o închideți.',anx:'Anxietate (A)',dep:'Depresie (D)',
+ res:'Rezultat',spk:'Ascultați întrebarea',spkIntro:'Ascultați instrucțiunile',stop:'Opriți citirea',ansIntro:'Variante de răspuns',noVoice:'Citirea cu voce nu este disponibilă pe acest dispozitiv.',noVoiceLang:'Acest dispozitiv nu are o voce în limba română. Încercați alt browser sau alt dispozitiv.',noApi:'Acest browser nu poate citi textul cu voce. Încercați Chrome sau Safari.',wa:'Trimiteți pe WhatsApp',waNote:'Se va deschide WhatsApp cu un mesaj pregătit. Îl puteți citi și modifica înainte de a-l trimite.',msgHead:'Chestionar HADS (Scala de anxietate și depresie)',msgDate:'Data',msgAns:'Răspunsuri (întrebare:scor)',resT:'Chestionar început',resP:n=>'Ați început deja chestionarul. Ați rămas la întrebarea '+n+' din '+I.length+'.',resDone:'Ați completat deja chestionarul.',resC:'Continuați de unde ați rămas',resNote:'Răspunsurile rămân doar în această filă a browserului și se șterg când o închideți.',anx:'Anxietate (A)',dep:'Depresie (D)',
  bands:['✓ Scor normal (0–7)','! Scor la limită (8–10)','⚠ Scor crescut, posibil caz clinic (11–21)'],
  note:'Acest chestionar oferă doar o orientare și nu stabilește un diagnostic. Discutați rezultatul cu medicul sau cu psihologul dumneavoastră.',
  again:'Începeți din nou',print:'Tipăriți',edit:'Modificați răspunsurile',sm:'Text mai mic',bg:'Text mai mare'},
 en:{title:'Hospital Anxiety and Depression Scale (HADS)',
  intro:'Choose the reply that is closest to how you have been feeling in the past week. Don’t take too long over your replies: your first, immediate answer is best. There are no right or wrong answers.',
  meta:'14 questions, about 3 minutes.',tip:'Tap or click an answer and you will move on to the next question automatically. You can go back at any time with the “Back” button.',start:'Start',qn:(n,m)=>'Question '+n+' of '+m,back:'Back',next:'Next',see:'See result',
- res:'Result',spk:'Listen to the question',spkIntro:'Listen to the instructions',stop:'Stop reading',ansIntro:'Answer options',noVoice:'Reading aloud is not available on this device.',wa:'Send on WhatsApp',waNote:'WhatsApp will open with a ready-made message. You can read and edit it before sending.',msgHead:'HADS questionnaire (Hospital Anxiety and Depression Scale)',msgDate:'Date',msgAns:'Answers (question:score)',resT:'Questionnaire in progress',resP:n=>'You have already started. You stopped at question '+n+' of '+I.length+'.',resDone:'You have already completed the questionnaire.',resC:'Continue where you left off',resNote:'Your answers stay only in this browser tab and are deleted when you close it.',anx:'Anxiety (A)',dep:'Depression (D)',
+ res:'Result',spk:'Listen to the question',spkIntro:'Listen to the instructions',stop:'Stop reading',ansIntro:'Answer options',noVoice:'Reading aloud is not available on this device.',noVoiceLang:'This device has no English voice. Try another browser or device.',noApi:'This browser cannot read text aloud. Try Chrome or Safari.',wa:'Send on WhatsApp',waNote:'WhatsApp will open with a ready-made message. You can read and edit it before sending.',msgHead:'HADS questionnaire (Hospital Anxiety and Depression Scale)',msgDate:'Date',msgAns:'Answers (question:score)',resT:'Questionnaire in progress',resP:n=>'You have already started. You stopped at question '+n+' of '+I.length+'.',resDone:'You have already completed the questionnaire.',resC:'Continue where you left off',resNote:'Your answers stay only in this browser tab and are deleted when you close it.',anx:'Anxiety (A)',dep:'Depression (D)',
  bands:['✓ Normal score (0–7)','! Borderline score (8–10)','⚠ Raised score, possible case (11–21)'],
  note:'This questionnaire is only a guide, not a diagnosis. Please discuss the result with your doctor or psychologist.',
  again:'Start again',print:'Print',edit:'Change my answers',sm:'Smaller text',bg:'Larger text'}
@@ -122,17 +122,20 @@ function go(n){clearTimeout(tm);tm=null;step=n;if(n>=0||ans.some(x=>x!==null))sa
 const SS=window.speechSynthesis||null;let voices=[],noV={ro:false,en:false},cur=null;
 function loadV(){try{voices=SS?SS.getVoices():[]}catch(e){voices=[]}}
 function vfor(){return voices.find(v=>String(v.lang).toLowerCase().replace('_','-').split('-')[0]===L)||null}
-function canSpeak(){return !!SS&&typeof SpeechSynthesisUtterance!=='undefined'&&!noV[L]&&(voices.length===0||!!vfor())}
+const hasTTS=()=>!!SS&&typeof SpeechSynthesisUtterance!=='undefined';
+function canSpeak(){return hasTTS()&&!noV[L]}
+const note=m=>{const p=el('p','note',m);p.setAttribute('role','status');return p};
 function stopSay(){if(!cur)return;const c=cur;cur=null;try{SS.cancel()}catch(e){}c.reset()}
 const clean=x=>x.replace(/\(ă\)/g,'').replace(/\s*\(HADS\)/g,'').replace(/\s+\./g,'.');
 function say(text,b,t){
   if(cur&&cur.b===b){stopSay();return}
   stopSay();
+  if(voices.length&&!vfor()){noV[L]=true;b.replaceWith(note(t.noVoiceLang));return} // device has voices, none for this language
   const u=new SpeechSynthesisUtterance(text),v=vfor(),lb=b.querySelector('.lbl'),orig=lb.textContent;
   u.lang=v?v.lang:(L==='ro'?'ro-RO':'en-GB');if(v)u.voice=v;u.rate=0.9;
   const c={b,reset(){lb.textContent=orig;b.classList.remove('on')}},lg=L;let started=false;
   cur=c;lb.textContent=t.stop;b.classList.add('on');
-  const fail=()=>{if(cur===c)cur=null;c.reset();noV[lg]=true;if(b.isConnected){const m=el('p','note',t.noVoice);m.setAttribute('role','status');b.replaceWith(m)}};
+  const fail=()=>{if(cur===c)cur=null;c.reset();noV[lg]=true;if(b.isConnected)b.replaceWith(note(t.noVoice))};
   u.onstart=()=>{started=true};
   u.onend=()=>{if(cur===c){cur=null;c.reset()}};
   u.onerror=e=>{if(e&&(e.error==='canceled'||e.error==='interrupted'))return;fail()};
@@ -143,8 +146,8 @@ function spkBtn(getText,label,t){
   const b=el('button','btn spk'),ic=el('span',null,'🔊 ');ic.setAttribute('aria-hidden','true');
   b.type='button';b.append(ic,el('span','lbl',label));b.onclick=()=>say(getText(),b,t);return b;
 }
-loadV();let hadV=canSpeak();
-if(SS&&SS.addEventListener){SS.addEventListener('voiceschanged',()=>{loadV();const n=canSpeak();if(n!==hadV){hadV=n;render(false)}})}
+loadV();
+if(SS&&SS.addEventListener){SS.addEventListener('voiceschanged',loadV)}
 document.addEventListener('visibilitychange',()=>{if(document.hidden)stopSay()});window.addEventListener('pagehide',stopSay);
 
 function render(focus){
@@ -159,6 +162,7 @@ function render(focus){
 function start(app,t){
   app.append(el('h1',null,t.title),el('p',null,t.intro),el('p','note',t.meta),el('p',null,t.tip));
   if(canSpeak())app.append(spkBtn(()=>clean([t.title,t.intro,t.tip].join('. ')),t.spkIntro,t));
+  else app.append(note(hasTTS()?t.noVoice:t.noApi)); // never silently missing on the start screen
   const n=el('div','nav');
   if(resume){
     const c=el('div','card'),done=resume.s>=I.length;
